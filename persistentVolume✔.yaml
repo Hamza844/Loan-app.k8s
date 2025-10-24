@@ -1,0 +1,27 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: myloan-mysql-0
+spec:
+  capacity:
+    storage: 7Gi
+  accessModes: 
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  hostPath:
+    path: /tmp/mybackup
+# PersistentVolume Claim start here......
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: myloan
+  namespace: my-app
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    request:
+      storage: 5Gi
+  storageClassName: manual

@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loan-frontend
+  namespace: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loan-frontend
+  template:
+    metadata:
+      labels:
+        app: loan-frontend
+    spec:
+      containers:
+        - name: loan-frontend
+          image: hamza844/loan-app9000
+          ports:
+            - containerPort: 9000
+          envFrom:
+            - configMapRef:
+                name: my-config
+            - secretRef:
+                name: app-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loan-service
+  namespace: my-app
+spec:
+  selector:
+    app: loan-frontend
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 9000

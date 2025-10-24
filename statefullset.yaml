@@ -1,0 +1,64 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+  namespace: my-app
+  labels:
+    app: mysql
+spec:
+  ports:
+    - port: 3306
+      name: mysql
+  clusterIP: None   # Headless service for StatefulSet
+  selector:
+    app: mysql
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+  namespace: my-app
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  serviceName: db
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          ports:
+            - containerPort: 3306
+              name: mysql
+          env:
+            - name: MYSQL_DATABASE
+              value: myloan
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DB_USERNAME
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DB_PASSWORD
+            - name: MYSQL_ROOT_PASSWORD
+              value: root123
+          volumeMounts:
+            - name: myloan
+              mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+    - metadata:
+        name: myloan
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 5Gi
